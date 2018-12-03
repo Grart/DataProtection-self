@@ -43,14 +43,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _keyManagementOptions = new KeyManagementOptions(keyManagementOptions.Value); // clone so new instance is immutable
             _keyManager = keyManager;
             CacheableKeyRingProvider = this;
-            _defaultKeyResolver = defaultKeyResolver;
+            _defaultKeyResolver = defaultKeyResolver;//通过这个获取请求的id
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
         }
 
         // for testing
         internal ICacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
 
-        private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
+        private CacheableKeyRing CreateCacheableKeyRingCore(
+				DateTimeOffset now, 
+				IKey keyJustAdded
+			)
         {
             // Refresh the list of all keys
             var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
@@ -112,7 +115,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IEnumerable<IKey> allKeys)
+        private CacheableKeyRing CreateCacheableKeyRingCoreStep2(
+				DateTimeOffset now, 
+				CancellationToken cacheExpirationToken, 
+				IKey defaultKey, 
+				IEnumerable<IKey> allKeys
+			)
         {
             Debug.Assert(defaultKey != null);
 
@@ -131,10 +139,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // key's expiration date is in the past, then we know we're using a fallback key and should disregard
             // its expiration date in favor of the next auto-refresh time.
             return new CacheableKeyRing(
-                expirationToken: cacheExpirationToken,
-                expirationTime: (defaultKey.ExpirationDate <= now) ? nextAutoRefreshTime : Min(defaultKey.ExpirationDate, nextAutoRefreshTime),
-                defaultKey: defaultKey,
-                allKeys: allKeys);
+					expirationToken: cacheExpirationToken,
+					expirationTime: (defaultKey.ExpirationDate <= now) ? nextAutoRefreshTime : Min(defaultKey.ExpirationDate, nextAutoRefreshTime),
+					defaultKey: defaultKey,
+					allKeys: allKeys
+				);
         }
 
         public IKeyRing GetCurrentKeyRing()
@@ -183,7 +192,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     try
                     {
-                        newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+						//调用的是接口方法
+						//=>ICacheableKeyRingProvider.GetCacheableKeyRing
+						//=>CreateCacheableKeyRingCore
+						newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
                     }
                     catch (Exception ex)
                     {
@@ -250,8 +262,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now)
         {
-            // the entry point allows one recursive call
-            return CreateCacheableKeyRingCore(now, keyJustAdded: null);
+			// the entry point allows one recursive call
+			return CreateCacheableKeyRingCore(now, keyJustAdded: null);
         }
     }
 }

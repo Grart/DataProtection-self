@@ -74,7 +74,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         // allows decrypting payloads whose keys have been revoked
-        public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+        public byte[] DangerousUnprotect(
+				byte[] protectedData, 
+				bool ignoreRevocationErrors, 
+				out bool requiresMigration, 
+				out bool wasRevoked
+			)
         {
             // argument & state checking
             if (protectedData == null)
@@ -83,7 +88,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             UnprotectStatus status;
-            var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
+            var retVal = UnprotectCore(
+					protectedData, 
+					ignoreRevocationErrors, 
+					status: out status
+				);
             requiresMigration = (status != UnprotectStatus.Ok);
             wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
             return retVal;
@@ -194,7 +203,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 wasRevoked: out wasRevoked);
         }
 
-        private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
+        private byte[] UnprotectCore(
+				byte[] protectedData, 
+				bool allowOperationsOnRevokedKeys, 
+				out UnprotectStatus status
+			)
         {
             Debug.Assert(protectedData != null);
 

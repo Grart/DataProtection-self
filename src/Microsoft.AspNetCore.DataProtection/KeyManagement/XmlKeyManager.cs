@@ -97,7 +97,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 }
                 else
                 {
-                    var keyRepositoryEncryptorPair = GetFallbackKeyRepositoryEncryptorPair();
+					//从_keyStorageDirectories中获取设置
+					var keyRepositoryEncryptorPair = GetFallbackKeyRepositoryEncryptorPair();
                     KeyRepository = keyRepositoryEncryptorPair.Key;
                     KeyEncryptor = keyRepositoryEncryptorPair.Value;
                 }
@@ -499,8 +500,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                         // If the user profile is available, we can protect using DPAPI.
                         // Probe to see if protecting to local user is available, and use it as the default if so.
                         encryptor = new DpapiXmlEncryptor(
-                            protectToLocalMachine: !DpapiSecretSerializerHelper.CanProtectToCurrentUserAccount(),
-                            loggerFactory: _loggerFactory);
+								protectToLocalMachine: !DpapiSecretSerializerHelper.CanProtectToCurrentUserAccount(),
+								loggerFactory: _loggerFactory
+							);
                     }
                     repository = new FileSystemXmlRepository(localAppDataKeysFolder, _loggerFactory);
 
