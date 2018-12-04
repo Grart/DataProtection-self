@@ -74,10 +74,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey fallbackKey, out bool callerShouldGenerateNewKey)
         {
             // find the preferred default key (allowing for server-to-server clock skew)
-            var preferredDefaultKey = (from key in allKeys
-                                       where key.ActivationDate <= now + _maxServerToServerClockSkew
-                                       orderby key.ActivationDate descending, key.KeyId ascending
-                                       select key).FirstOrDefault();
+			var preferredDefaultKey = (
+						from key in allKeys
+						where key.ActivationDate <= now + _maxServerToServerClockSkew
+						orderby key.ActivationDate descending, key.KeyId ascending
+						select key
+					)
+					.FirstOrDefault();
 
             if (preferredDefaultKey != null)
             {
@@ -102,10 +105,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // to the preferred default key's expiration date (allowing for skew) and that it will
                 // remain valid one propagation cycle from now? If so, the caller doesn't need to add a
                 // new key.
-                callerShouldGenerateNewKey = !allKeys.Any(key =>
-                   key.ActivationDate <= (preferredDefaultKey.ExpirationDate + _maxServerToServerClockSkew)
-                   && !key.IsExpired(now + _keyPropagationWindow)
-                   && !key.IsRevoked);
+                callerShouldGenerateNewKey = !allKeys.Any(
+									key => key.ActivationDate <= (preferredDefaultKey.ExpirationDate + _maxServerToServerClockSkew)
+										&& !key.IsExpired(now + _keyPropagationWindow)
+										&& !key.IsRevoked
+								);
 
                 if (callerShouldGenerateNewKey)
                 {
