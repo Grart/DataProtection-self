@@ -24,14 +24,20 @@ namespace Microsoft.AspNetCore.DataProtection.SystemWeb
         private readonly Lazy<IDataProtector> _lazyProtector;
         private readonly Lazy<IDataProtector> _lazyProtectorSuppressedPrimaryPurpose;
 
-        public CompatibilityDataProtector(string applicationName, string primaryPurpose, string[] specificPurposes)
+        public CompatibilityDataProtector(
+				string applicationName, 
+				string primaryPurpose, 
+				string[] specificPurposes
+			)
             : base("application-name", "primary-purpose", null) // we feed dummy values to the base ctor
         {
             // We don't want to evaluate the IDataProtectionProvider factory quite yet,
             // as we'd rather defer failures to the call to Protect so that we can bubble
             // up a good error message to the developer.
 
-            _lazyProtector = new Lazy<IDataProtector>(() => _lazyProtectionProvider.Value.CreateProtector(primaryPurpose, specificPurposes));
+            _lazyProtector = new Lazy<IDataProtector>(
+					() => _lazyProtectionProvider.Value.CreateProtector(primaryPurpose, specificPurposes)
+				);
 
             // System.Web always provides "User.MachineKey.Protect" as the primary purpose for calls
             // to MachineKey.Protect. Only in this case should we allow suppressing the primary
@@ -39,7 +45,9 @@ namespace Microsoft.AspNetCore.DataProtection.SystemWeb
             // into calls to provider.GetProtector(purposes).Protect(userData).
             if (primaryPurpose == "User.MachineKey.Protect")
             {
-                _lazyProtectorSuppressedPrimaryPurpose = new Lazy<IDataProtector>(() => _lazyProtectionProvider.Value.CreateProtector(specificPurposes));
+                _lazyProtectorSuppressedPrimaryPurpose = new Lazy<IDataProtector>(
+						() => _lazyProtectionProvider.Value.CreateProtector(specificPurposes)
+					);
             }
             else
             {

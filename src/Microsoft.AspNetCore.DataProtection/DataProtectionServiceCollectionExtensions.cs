@@ -94,7 +94,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 // Link the provider to the supplied discriminator
                 if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))
                 {
-                    dataProtectionProvider = dataProtectionProvider.CreateProtector(dpOptions.Value.ApplicationDiscriminator);
+                    dataProtectionProvider = dataProtectionProvider.CreateProtector(
+							dpOptions.Value.ApplicationDiscriminator
+						);
                 }
 
                 return dataProtectionProvider;

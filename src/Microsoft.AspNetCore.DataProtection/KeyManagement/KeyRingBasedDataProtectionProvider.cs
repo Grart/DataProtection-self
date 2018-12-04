@@ -26,10 +26,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             return new KeyRingBasedDataProtector(
-                logger: _logger,
-                keyRingProvider: _keyRingProvider,
-                originalPurposes: null,
-                newPurpose: purpose);
+					logger: _logger,
+					keyRingProvider: _keyRingProvider,
+					originalPurposes: null,
+					newPurpose: purpose
+				);
         }
     }
 }

@@ -27,11 +27,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly IKeyRingProvider _keyRingProvider;
         private readonly ILogger _logger;
 
-        public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger logger, string[] originalPurposes, string newPurpose)
+        public KeyRingBasedDataProtector(
+				IKeyRingProvider keyRingProvider, 
+				ILogger logger, 
+				string[] originalPurposes, 
+				string newPurpose
+			)
         {
             Debug.Assert(keyRingProvider != null);
-
-            Purposes = ConcatPurposes(originalPurposes, newPurpose);
+			//!!重要，通过该结构体，设置加密数据,Purposes 不同的网站 生成的加密数据不同
+			//!!运行目录会作为一个属性加入
+			Purposes = ConcatPurposes(originalPurposes, newPurpose);
             _logger = logger; // can be null
             _keyRingProvider = keyRingProvider;
             _aadTemplate = new AdditionalAuthenticatedDataTemplate(Purposes);
@@ -54,7 +60,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        public IDataProtector CreateProtector(string purpose)
+		/// <summary>
+		/// 通过这个方法叠加Purposes
+		/// </summary>
+		public IDataProtector CreateProtector(string purpose)
         {
             if (purpose == null)
             {
@@ -62,40 +71,16 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             return new KeyRingBasedDataProtector(
-                logger: _logger,
-                keyRingProvider: _keyRingProvider,
-                originalPurposes: Purposes,
-                newPurpose: purpose);
+					logger: _logger,
+					keyRingProvider: _keyRingProvider,
+					originalPurposes: Purposes,
+					newPurpose: purpose
+				);
         }
 
         private static string JoinPurposesForLog(IEnumerable<string> purposes)
         {
             return "(" + String.Join(", ", purposes.Select(p => "'" + p + "'")) + ")";
-        }
-
-        // allows decrypting payloads whose keys have been revoked
-        public byte[] DangerousUnprotect(
-				byte[] protectedData, 
-				bool ignoreRevocationErrors, 
-				out bool requiresMigration, 
-				out bool wasRevoked
-			)
-        {
-            // argument & state checking
-            if (protectedData == null)
-            {
-                throw new ArgumentNullException(nameof(protectedData));
-            }
-
-            UnprotectStatus status;
-            var retVal = UnprotectCore(
-					protectedData, 
-					ignoreRevocationErrors, 
-					status: out status
-				);
-            requiresMigration = (status != UnprotectStatus.Ok);
-            wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
-            return retVal;
         }
 
         public byte[] Protect(byte[] plaintext)
@@ -197,15 +182,42 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // Argument checking will be done by the callee
             bool requiresMigration, wasRevoked; // unused
-            return DangerousUnprotect(protectedData,
-                ignoreRevocationErrors: false,
-                requiresMigration: out requiresMigration,
-                wasRevoked: out wasRevoked);
-        }
+            return DangerousUnprotect(
+					protectedData,
+					ignoreRevocationErrors: false,
+					requiresMigration: out requiresMigration,
+					wasRevoked: out wasRevoked
+				);
+		}
 
-        private byte[] UnprotectCore(
+		// allows decrypting payloads whose keys have been revoked
+		public byte[] DangerousUnprotect(
+				byte[] protectedData,
+				bool ignoreRevocationErrors,
+				out bool requiresMigration,
+				out bool wasRevoked
+			)
+		{
+			// argument & state checking
+			if (protectedData == null)
+			{
+				throw new ArgumentNullException(nameof(protectedData));
+			}
+
+			UnprotectStatus status;
+			var retVal = UnprotectCore(
+					protectedData,
+					ignoreRevocationErrors,
+					status: out status
+				);
+			requiresMigration = (status != UnprotectStatus.Ok);
+			wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+			return retVal;
+		}
+		//Microsoft.AspNetCore.Authentication.SecureDataFormat<AuthenticationTicket>.Protect()=>请求Cookies解码
+		private byte[] UnprotectCore(
 				byte[] protectedData, 
-				bool allowOperationsOnRevokedKeys, 
+				bool allowOperationsOnRevokedKeys, //Unprotect()=>false
 				out UnprotectStatus status
 			)
         {

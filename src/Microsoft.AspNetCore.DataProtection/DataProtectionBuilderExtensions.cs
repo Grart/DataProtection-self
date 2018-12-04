@@ -193,7 +193,10 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
         /// <param name="directory">The directory in which to store keys.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
-        public static IDataProtectionBuilder PersistKeysToFileSystem(this IDataProtectionBuilder builder, DirectoryInfo directory)
+        public static IDataProtectionBuilder PersistKeysToFileSystem(
+				this IDataProtectionBuilder builder, 
+				DirectoryInfo directory
+			)
         {
             if (builder == null)
             {
@@ -205,16 +208,20 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(directory));
             }
 
-            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
-            {
-                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-                return new ConfigureOptions<KeyManagementOptions>(options =>
-                {
-                    options.XmlRepository = new FileSystemXmlRepository(directory, loggerFactory);
-                });
-            });
+			builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(
+				services =>
+				{
+					var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+					return new ConfigureOptions<KeyManagementOptions>(
+						options =>
+						{
+							options.XmlRepository = new FileSystemXmlRepository(directory, loggerFactory);
+						}
+					);
+				}
+				);
 
-            return builder;
+			return builder;
         }
 
         /// <summary>
