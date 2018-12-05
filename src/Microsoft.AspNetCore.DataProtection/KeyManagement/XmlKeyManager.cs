@@ -72,16 +72,26 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator, ILoggerFactory loggerFactory)
-            : this(keyManagementOptions, activator, loggerFactory, DefaultKeyStorageDirectories.Instance)
+        public XmlKeyManager(
+				IOptions<KeyManagementOptions> keyManagementOptions, 
+				IActivator activator, 
+				ILoggerFactory loggerFactory
+			)
+            : this(
+				  keyManagementOptions, 
+				  activator, 
+				  loggerFactory, 
+				  DefaultKeyStorageDirectories.Instance
+				)
         { }
 
-        internal XmlKeyManager(
-            IOptions<KeyManagementOptions> keyManagementOptions,
-            IActivator activator,
-            ILoggerFactory loggerFactory,
-            IDefaultKeyStorageDirectories keyStorageDirectories)
-        {
+		internal XmlKeyManager(
+				IOptions<KeyManagementOptions> keyManagementOptions,
+				IActivator activator,
+				ILoggerFactory loggerFactory,
+				IDefaultKeyStorageDirectories keyStorageDirectories
+			)
+		{
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<XmlKeyManager>();
             _keyStorageDirectories = keyStorageDirectories ?? throw new ArgumentNullException(nameof(keyStorageDirectories));
@@ -89,8 +99,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             KeyRepository = keyManagementOptions.Value.XmlRepository;
             KeyEncryptor = keyManagementOptions.Value.XmlEncryptor;
             if (KeyRepository == null)
-            {
-                if (KeyEncryptor != null)
+			{
+				//当 (null== options.XmlRepository) 时 XmlKeyManager 会自动创建一个
+				if (KeyEncryptor != null)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatXmlKeyManager_IXmlRepositoryNotFound(nameof(IXmlRepository), nameof(IXmlEncryptor)));
@@ -366,7 +377,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         }
 
-        IKey IInternalXmlKeyManager.CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate)
+        IKey IInternalXmlKeyManager.CreateNewKey(
+				Guid keyId, 
+				DateTimeOffset creationDate, 
+				DateTimeOffset activationDate, 
+				DateTimeOffset expirationDate
+			)
         {
             // <key id="{guid}" version="1">
             //   <creationDate>...</creationDate>
@@ -421,12 +437,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // And we're done!
             return new Key(
-                keyId: keyId,
-                creationDate: creationDate,
-                activationDate: activationDate,
-                expirationDate: expirationDate,
-                descriptor: newDescriptor,
-                encryptorFactories: _encryptorFactories);
+					keyId: keyId,
+					creationDate: creationDate,
+					activationDate: activationDate,
+					expirationDate: expirationDate,
+					descriptor: newDescriptor,
+					encryptorFactories: _encryptorFactories
+				);
         }
 
         IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)

@@ -26,7 +26,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds data protection services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services)
+        public static IDataProtectionBuilder AddDataProtection(
+				this IServiceCollection services
+			)
         {
             if (services == null)
             {
@@ -46,7 +48,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="setupAction">An <see cref="Action{DataProtectionOptions}"/> to configure the provided <see cref="DataProtectionOptions"/>.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services, Action<DataProtectionOptions> setupAction)
+        public static IDataProtectionBuilder AddDataProtection(
+				this IServiceCollection services, 
+				Action<DataProtectionOptions> setupAction
+			)
         {
             if (services == null)
             {
@@ -63,7 +68,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        private static void AddDataProtectionServices(IServiceCollection services)
+        private static void AddDataProtectionServices(
+				IServiceCollection services
+			)
         {
             if (OSVersionUtil.IsWindows())
             {
